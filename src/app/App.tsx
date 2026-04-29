@@ -8,8 +8,8 @@ function App() {
             Weekly Study Planner
           </h1>
           <p className="max-w-2xl text-base leading-7 text-slate-600">
-            Project tooling is ready. The planner feature will be implemented in
-            small commits following the documented task order.
+            FSD Lite structure is ready. Planner features will be added in small
+            domain-focused commits.
           </p>
         </div>
       </section>
