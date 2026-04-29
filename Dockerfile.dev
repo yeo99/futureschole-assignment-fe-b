@@ -1,0 +1,15 @@
+FROM node:24.13.0-slim
+
+WORKDIR /app
+
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN corepack enable
+
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+EXPOSE 5173
+
+CMD ["pnpm", "dev", "--host", "0.0.0.0"]
