@@ -2,6 +2,11 @@ import { DAYS_OF_WEEK } from './constants'
 import { getDurationMinutes } from './time'
 import type { DayOfWeek, StudyBlock } from './types'
 
+type SummaryBlock = Pick<
+  StudyBlock,
+  'courseId' | 'dayOfWeek' | 'startTime' | 'endTime'
+>
+
 export interface PlannerSummary {
   totalMinutes: number
   minutesByCourseId: Record<string, number>
@@ -18,7 +23,7 @@ function createEmptyMinutesByDay(): Record<DayOfWeek, number> {
   return minutesByDay
 }
 
-export function calculatePlannerSummary(blocks: StudyBlock[]): PlannerSummary {
+export function calculatePlannerSummary(blocks: SummaryBlock[]): PlannerSummary {
   const summary: PlannerSummary = {
     totalMinutes: 0,
     minutesByCourseId: {},

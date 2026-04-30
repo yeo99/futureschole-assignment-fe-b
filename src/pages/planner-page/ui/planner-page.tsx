@@ -1,13 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
+import { createCourseMap } from '@/entities/course/model/create-course-map'
 import { useCoursesQuery } from '@/entities/course/model/queries'
-import { usePlannerQuery } from '@/entities/planner/model/queries'
 import { usePlannerDraftStore } from '@/entities/planner/model/draft-store'
+import { usePlannerQuery } from '@/entities/planner/model/queries'
 import { formatISODate, getWeekStartDate } from '@/entities/planner/model/week'
 import { getApiErrorMessage } from '@/shared/api/http-client'
-import { EmptyState } from '@/shared/ui/empty-state'
 import { InlineAlert } from '@/shared/ui/inline-alert'
 import { LoadingState } from '@/shared/ui/loading-state'
 import { PlannerShell } from '@/widgets/planner-shell/ui/planner-shell'
+import { PlannerSummary } from '@/widgets/planner-summary/ui/planner-summary'
 
 const currentWeekStart = formatISODate(getWeekStartDate(new Date()))
 
@@ -19,6 +20,10 @@ export function PlannerPage() {
   const draftBlocks = usePlannerDraftStore((state) => state.blocks)
   const initializeDraftFromServer = usePlannerDraftStore(
     (state) => state.initializeDraftFromServer,
+  )
+  const courseMap = useMemo(
+    () => createCourseMap(coursesQuery.data?.courses ?? []),
+    [coursesQuery.data?.courses],
   )
 
   useEffect(() => {
@@ -49,24 +54,13 @@ export function PlannerPage() {
 
       {!isLoading && !error ? (
         <section className="grid gap-4">
-          <InlineAlert variant={isDirty ? 'warning' : 'success'}>
-            {isDirty
-              ? '저장하지 않은 변경사항이 있습니다.'
-              : '서버에 저장된 일정과 동기화된 상태입니다.'}
-          </InlineAlert>
+          {isDirty ? (
+            <InlineAlert variant="warning">
+              저장하지 않은 변경사항이 있습니다.
+            </InlineAlert>
+          ) : null}
 
-          {draftBlocks.length === 0 ? (
-            <EmptyState
-              title="등록된 학습 블록이 없습니다."
-              description="시간표에서 빈 시간을 선택해 학습 블록을 추가할 수 있습니다."
-            />
-          ) : (
-            <div className="rounded-md border border-slate-200 bg-white p-4">
-              <p className="text-sm font-medium text-slate-900">
-                현재 draft 블록 {draftBlocks.length}개
-              </p>
-            </div>
-          )}
+          <PlannerSummary blocks={draftBlocks} courseMap={courseMap} />
         </section>
       ) : null}
     </PlannerShell>
