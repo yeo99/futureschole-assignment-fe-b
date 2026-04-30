@@ -12,6 +12,7 @@ import {
 import { generateTimeOptions } from '@/entities/planner/model/time'
 import type {
   DraftStudyBlock,
+  NewStudyBlockPreset,
   SavePlannerBlockRequest,
 } from '@/entities/planner/model/types'
 import { Button } from '@/shared/ui/button'
@@ -26,6 +27,7 @@ import {
 interface StudyBlockEditorPanelProps {
   blocks: DraftStudyBlock[]
   courses: Course[]
+  newBlockPreset: NewStudyBlockPreset | null
   selectedBlock: DraftStudyBlock | null
   onCreateMode: () => void
   onAddBlock: (block: SavePlannerBlockRequest) => void
@@ -40,12 +42,17 @@ const timeOptions = generateTimeOptions()
 
 function createFormDefaultValues(
   block: DraftStudyBlock | null,
+  preset: NewStudyBlockPreset | null,
 ): StudyBlockFormInput {
   return {
     courseId: block?.courseId ?? '',
-    dayOfWeek: block ? String(block.dayOfWeek) : '',
-    startTime: block?.startTime ?? '09:00',
-    endTime: block?.endTime ?? '10:00',
+    dayOfWeek: block
+      ? String(block.dayOfWeek)
+      : preset
+        ? String(preset.dayOfWeek)
+        : '',
+    startTime: block?.startTime ?? preset?.startTime ?? '09:00',
+    endTime: block?.endTime ?? preset?.endTime ?? '10:00',
     memo: block?.memo ?? '',
   }
 }
@@ -67,6 +74,7 @@ function toSaveRequest(
 export function StudyBlockEditorPanel({
   blocks,
   courses,
+  newBlockPreset,
   selectedBlock,
   onCreateMode,
   onAddBlock,
@@ -93,13 +101,13 @@ export function StudyBlockEditorPanel({
     setError,
   } = useForm<StudyBlockFormInput, unknown, StudyBlockFormValues>({
     resolver: zodResolver(studyBlockFormSchema),
-    defaultValues: createFormDefaultValues(selectedBlock),
+    defaultValues: createFormDefaultValues(selectedBlock, newBlockPreset),
   })
   const isEditing = selectedBlock !== null
 
   useEffect(() => {
-    reset(createFormDefaultValues(selectedBlock))
-  }, [reset, selectedBlock])
+    reset(createFormDefaultValues(selectedBlock, newBlockPreset))
+  }, [newBlockPreset, reset, selectedBlock])
 
   const submitForm = handleSubmit((values) => {
     const hasConflict = hasDraftTimeConflict(
@@ -129,7 +137,8 @@ export function StudyBlockEditorPanel({
     }
 
     if (!selectedBlock) {
-      reset(createFormDefaultValues(null))
+      onCreateMode()
+      reset(createFormDefaultValues(null, null))
     }
   })
 
@@ -303,7 +312,9 @@ export function StudyBlockEditorPanel({
           </Button>
           <Button
             leftIcon={<RotateCcw className="size-4" aria-hidden />}
-            onClick={() => reset(createFormDefaultValues(selectedBlock))}
+            onClick={() =>
+              reset(createFormDefaultValues(selectedBlock, newBlockPreset))
+            }
             type="button"
             variant="secondary"
           >

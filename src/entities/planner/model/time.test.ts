@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import {
   formatMinutesToTime,
+  generateSlotStartTimes,
   generateTimeOptions,
+  getNextSlotEndTime,
   isAlignedToSlot,
   isValidTimeFormat,
   isWithinPlannerRange,
@@ -33,5 +35,13 @@ describe('planner time utils', () => {
       '08:30',
       '09:00',
     ])
+  })
+
+  it('슬롯 시작 시간은 종료 경계값을 제외하고 생성한다', () => {
+    expect(generateSlotStartTimes('08:00', '09:00')).toEqual(['08:00', '08:30'])
+  })
+
+  it('선택한 슬롯의 종료 시간을 계산한다', () => {
+    expect(getNextSlotEndTime('08:30')).toBe('09:00')
   })
 })

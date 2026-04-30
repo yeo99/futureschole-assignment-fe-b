@@ -38,3 +38,9 @@ export interface SavePlannerResponse {
 export interface DraftStudyBlock extends SavePlannerBlockRequest {
   clientId: string
 }
+
+export interface NewStudyBlockPreset {
+  dayOfWeek: DayOfWeek
+  startTime: TimeString
+  endTime: TimeString
+}

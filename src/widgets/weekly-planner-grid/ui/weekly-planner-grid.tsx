@@ -3,7 +3,11 @@ import type { CourseMap } from '@/entities/course/model/create-course-map'
 import { DAY_LABELS, DAYS_OF_WEEK } from '@/entities/planner/model/constants'
 import { findDraftConflictClientIds } from '@/entities/planner/model/draft-validation'
 import { groupBlocksByDay } from '@/entities/planner/model/grouping'
-import type { DayOfWeek, DraftStudyBlock } from '@/entities/planner/model/types'
+import type {
+  DayOfWeek,
+  DraftStudyBlock,
+  NewStudyBlockPreset,
+} from '@/entities/planner/model/types'
 import { DayColumn } from '@/entities/planner/ui/day-column'
 import { TimeAxis } from '@/entities/planner/ui/time-axis'
 
@@ -11,6 +15,7 @@ interface WeeklyPlannerGridProps {
   blocks: DraftStudyBlock[]
   courseMap: CourseMap
   selectedBlockClientId?: DraftStudyBlock['clientId'] | null
+  onCreateBlockAtSlot?: (preset: NewStudyBlockPreset) => void
   onSelectBlock?: (block: DraftStudyBlock) => void
 }
 
@@ -18,6 +23,7 @@ export function WeeklyPlannerGrid({
   blocks,
   courseMap,
   selectedBlockClientId,
+  onCreateBlockAtSlot,
   onSelectBlock,
 }: WeeklyPlannerGridProps) {
   const daySelectId = useId()
@@ -60,6 +66,8 @@ export function WeeklyPlannerGrid({
             blocks={blocksByDay[selectedDayOfWeek] ?? []}
             conflictClientIds={conflictClientIds}
             courseMap={courseMap}
+            dayOfWeek={selectedDayOfWeek}
+            onCreateBlockAtSlot={onCreateBlockAtSlot}
             selectedBlockClientId={selectedBlockClientId}
             onSelectBlock={onSelectBlock}
           />
@@ -93,6 +101,8 @@ export function WeeklyPlannerGrid({
                   blocks={blocksByDay[dayOfWeek] ?? []}
                   conflictClientIds={conflictClientIds}
                   courseMap={courseMap}
+                  dayOfWeek={dayOfWeek}
+                  onCreateBlockAtSlot={onCreateBlockAtSlot}
                   selectedBlockClientId={selectedBlockClientId}
                   onSelectBlock={onSelectBlock}
                 />

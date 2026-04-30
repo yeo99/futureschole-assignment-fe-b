@@ -71,3 +71,18 @@ export function generateTimeOptions(
 
   return options
 }
+
+export function generateSlotStartTimes(
+  startTime: TimeString = PLANNER_START_TIME,
+  endTime: TimeString = PLANNER_END_TIME,
+  slotMinutes = SLOT_MINUTES,
+): TimeString[] {
+  return generateTimeOptions(startTime, endTime, slotMinutes).slice(0, -1)
+}
+
+export function getNextSlotEndTime(
+  startTime: TimeString,
+  slotMinutes = SLOT_MINUTES,
+): TimeString {
+  return formatMinutesToTime(parseTimeToMinutes(startTime) + slotMinutes)
+}

@@ -4,7 +4,10 @@ import { useCoursesQuery } from '@/entities/course/model/queries'
 import { usePlannerDraftStore } from '@/entities/planner/model/draft-store'
 import { PLANNER_CONFIRM_MESSAGES } from '@/entities/planner/model/messages'
 import { usePlannerQuery } from '@/entities/planner/model/queries'
-import type { DraftStudyBlock } from '@/entities/planner/model/types'
+import type {
+  DraftStudyBlock,
+  NewStudyBlockPreset,
+} from '@/entities/planner/model/types'
 import { formatISODate, getWeekStartDate } from '@/entities/planner/model/week'
 import { WeekNavigator } from '@/features/change-planner-week/ui/week-navigator'
 import { useSavePlannerDraft } from '@/features/planner-save/model/use-save-planner-draft'
@@ -24,6 +27,8 @@ export function PlannerPage() {
   const [selectedBlockClientId, setSelectedBlockClientId] = useState<
     DraftStudyBlock['clientId'] | null
   >(null)
+  const [newBlockPreset, setNewBlockPreset] =
+    useState<NewStudyBlockPreset | null>(null)
   const coursesQuery = useCoursesQuery()
   const plannerQuery = usePlannerQuery(weekStart)
   const draftWeekStart = usePlannerDraftStore((state) => state.weekStart)
@@ -84,6 +89,10 @@ export function PlannerPage() {
   const isLoading = coursesQuery.isLoading || plannerQuery.isLoading
   const error = coursesQuery.error ?? plannerQuery.error
   const effectiveSelectedBlockClientId = selectedBlock?.clientId ?? null
+  const startCreateMode = (preset: NewStudyBlockPreset | null = null) => {
+    setSelectedBlockClientId(null)
+    setNewBlockPreset(preset)
+  }
   const handleChangeWeekStart = (nextWeekStart: string) => {
     if (
       isDirty &&
@@ -92,7 +101,7 @@ export function PlannerPage() {
       return
     }
 
-    setSelectedBlockClientId(null)
+    startCreateMode()
     setWeekStart(nextWeekStart)
   }
 
@@ -139,14 +148,19 @@ export function PlannerPage() {
               blocks={draftBlocks}
               courseMap={courseMap}
               selectedBlockClientId={effectiveSelectedBlockClientId}
-              onSelectBlock={(block) => setSelectedBlockClientId(block.clientId)}
+              onCreateBlockAtSlot={startCreateMode}
+              onSelectBlock={(block) => {
+                setNewBlockPreset(null)
+                setSelectedBlockClientId(block.clientId)
+              }}
             />
             <StudyBlockEditorPanel
               blocks={draftBlocks}
               courses={courses}
+              newBlockPreset={newBlockPreset}
               selectedBlock={selectedBlock}
               onAddBlock={addDraftBlock}
-              onCreateMode={() => setSelectedBlockClientId(null)}
+              onCreateMode={() => startCreateMode()}
               onRemoveBlock={removeDraftBlock}
               onUpdateBlock={updateDraftBlock}
             />
