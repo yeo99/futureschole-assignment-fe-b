@@ -23,11 +23,11 @@ describe('planner validation', () => {
     expect(doTimeRangesOverlap('09:00', '10:00', '09:30', '10:30')).toBe(true)
   })
 
-  it('종료 시간이 시작 시간보다 늦어야 한다', () => {
+  it('종료 시간은 시작 시간보다 늦어야 한다', () => {
     expect(validateTimeRange('10:00', '09:00')).toBe('INVALID_TIME_RANGE')
   })
 
-  it('같은 요일의 겹치는 블록을 충돌로 반환한다', () => {
+  it('같은 요일에 겹치는 블록을 충돌로 반환한다', () => {
     const conflicts = findTimeConflicts([
       baseBlock,
       {
