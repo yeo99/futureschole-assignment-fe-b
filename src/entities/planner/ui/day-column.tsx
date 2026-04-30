@@ -1,0 +1,40 @@
+import type { CourseMap } from '@/entities/course/model/create-course-map'
+import { calculateBlockLayout } from '../model/layout'
+import type { DraftStudyBlock } from '../model/types'
+import { StudyBlockCard } from './study-block-card'
+
+interface DayColumnProps {
+  blocks: DraftStudyBlock[]
+  courseMap: CourseMap
+}
+
+export function DayColumn({ blocks, courseMap }: DayColumnProps) {
+  return (
+    <div className="relative h-full bg-white">
+      <div className="absolute inset-0 grid grid-rows-12">
+        {Array.from({ length: 12 }).map((_, index) => (
+          <div
+            className="border-b border-slate-100 last:border-b-0"
+            key={index}
+          />
+        ))}
+      </div>
+
+      {blocks.map((block) => {
+        const layout = calculateBlockLayout(block)
+
+        return (
+          <StudyBlockCard
+            block={block}
+            courseMap={courseMap}
+            key={block.clientId}
+            style={{
+              top: `${layout.topPercent}%`,
+              height: `${layout.heightPercent}%`,
+            }}
+          />
+        )
+      })}
+    </div>
+  )
+}

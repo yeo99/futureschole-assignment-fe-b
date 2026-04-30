@@ -9,6 +9,7 @@ import { InlineAlert } from '@/shared/ui/inline-alert'
 import { LoadingState } from '@/shared/ui/loading-state'
 import { PlannerShell } from '@/widgets/planner-shell/ui/planner-shell'
 import { PlannerSummary } from '@/widgets/planner-summary/ui/planner-summary'
+import { WeeklyPlannerGrid } from '@/widgets/weekly-planner-grid/ui/weekly-planner-grid'
 
 const currentWeekStart = formatISODate(getWeekStartDate(new Date()))
 
@@ -44,7 +45,7 @@ export function PlannerPage() {
   return (
     <PlannerShell
       title="주간 학습 플래너"
-      description="월요일부터 일요일까지의 학습 블록을 편집하고 한 번에 저장합니다."
+      description="월요일부터 일요일까지의 학습 블록을 한 주 단위로 확인하고 편집합니다."
     >
       {isLoading ? <LoadingState title="플래너를 불러오는 중입니다." /> : null}
 
@@ -61,6 +62,7 @@ export function PlannerPage() {
           ) : null}
 
           <PlannerSummary blocks={draftBlocks} courseMap={courseMap} />
+          <WeeklyPlannerGrid blocks={draftBlocks} courseMap={courseMap} />
         </section>
       ) : null}
     </PlannerShell>
