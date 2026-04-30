@@ -23,6 +23,7 @@ interface PlannerDraftState {
   removeDraftBlock: (clientId: DraftStudyBlock['clientId']) => void
   replaceDraftAfterSave: (planner: SavePlannerResponse) => void
   setSaveError: (message: string) => void
+  discardDraftChanges: () => void
   resetDraft: () => void
 }
 
@@ -159,6 +160,14 @@ export const usePlannerDraftStore = create<PlannerDraftState>((set) => ({
     set({
       lastErrorMessage: message,
     })
+  },
+
+  discardDraftChanges: () => {
+    set((state) => ({
+      blocks: [...state.lastSavedBlocks],
+      isDirty: false,
+      lastErrorMessage: null,
+    }))
   },
 
   resetDraft: () => {
