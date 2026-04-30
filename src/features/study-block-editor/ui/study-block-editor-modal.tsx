@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Plus, RotateCcw, Trash2 } from 'lucide-react'
+import { RotateCcw, Trash2 } from 'lucide-react'
 import { useEffect, useId, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import type { Course } from '@/entities/course/model/types'
@@ -17,6 +17,7 @@ import type {
 } from '@/entities/planner/model/types'
 import { Button } from '@/shared/ui/button'
 import { FieldError } from '@/shared/ui/field-error'
+import { Modal } from '@/shared/ui/modal'
 import { Textarea } from '@/shared/ui/textarea'
 import {
   studyBlockFormSchema,
@@ -24,18 +25,19 @@ import {
   type StudyBlockFormValues,
 } from '../model/study-block-form-schema'
 
-interface StudyBlockEditorPanelProps {
+interface StudyBlockEditorModalProps {
   blocks: DraftStudyBlock[]
   courses: Course[]
+  isOpen: boolean
   newBlockPreset: NewStudyBlockPreset | null
   selectedBlock: DraftStudyBlock | null
-  onCreateMode: () => void
   onAddBlock: (block: SavePlannerBlockRequest) => void
+  onClose: () => void
+  onRemoveBlock: (clientId: DraftStudyBlock['clientId']) => void
   onUpdateBlock: (
     clientId: DraftStudyBlock['clientId'],
     block: SavePlannerBlockRequest,
   ) => void
-  onRemoveBlock: (clientId: DraftStudyBlock['clientId']) => void
 }
 
 const timeOptions = generateTimeOptions()
@@ -71,16 +73,17 @@ function toSaveRequest(
   }
 }
 
-export function StudyBlockEditorPanel({
+export function StudyBlockEditorModal({
   blocks,
   courses,
+  isOpen,
   newBlockPreset,
   selectedBlock,
-  onCreateMode,
   onAddBlock,
-  onUpdateBlock,
+  onClose,
   onRemoveBlock,
-}: StudyBlockEditorPanelProps) {
+  onUpdateBlock,
+}: StudyBlockEditorModalProps) {
   const formId = useId()
   const fieldId = useMemo(
     () => ({
@@ -89,7 +92,6 @@ export function StudyBlockEditorPanel({
       startTime: `${formId}-start-time`,
       endTime: `${formId}-end-time`,
       memo: `${formId}-memo`,
-      formError: `${formId}-form-error`,
     }),
     [formId],
   )
@@ -136,10 +138,8 @@ export function StudyBlockEditorPanel({
       onAddBlock(request)
     }
 
-    if (!selectedBlock) {
-      onCreateMode()
-      reset(createFormDefaultValues(null, null))
-    }
+    reset(createFormDefaultValues(null, null))
+    onClose()
   })
 
   const handleRemoveBlock = () => {
@@ -152,32 +152,16 @@ export function StudyBlockEditorPanel({
     }
 
     onRemoveBlock(selectedBlock.clientId)
-    onCreateMode()
+    onClose()
   }
 
   return (
-    <aside className="rounded-md border border-slate-200 bg-white p-4 shadow-sm lg:sticky lg:top-6">
-      <div className="mb-4 flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-base font-semibold text-slate-950">
-            {isEditing ? '학습 블록 수정' : '학습 블록 추가'}
-          </h2>
-          <p className="mt-1 text-sm leading-5 text-slate-600">
-            강의, 요일, 시간을 입력하면 저장 전 draft에 먼저 반영됩니다.
-          </p>
-        </div>
-        {isEditing ? (
-          <Button
-            aria-label="새 학습 블록 입력"
-            className="size-9 shrink-0 px-0"
-            onClick={onCreateMode}
-            variant="ghost"
-          >
-            <Plus className="size-4" aria-hidden />
-          </Button>
-        ) : null}
-      </div>
-
+    <Modal
+      isOpen={isOpen}
+      title={isEditing ? '학습 블록 수정' : '학습 블록 추가'}
+      description="강의, 요일, 시간을 입력하면 저장 전 draft에 먼저 반영됩니다."
+      onClose={onClose}
+    >
       <form className="grid gap-4" onSubmit={submitForm}>
         <div>
           <label
@@ -187,11 +171,13 @@ export function StudyBlockEditorPanel({
             강의
           </label>
           <select
+            aria-describedby={
+              errors.courseId ? `${fieldId.courseId}-error` : undefined
+            }
+            aria-invalid={!!errors.courseId || undefined}
             className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
             id={fieldId.courseId}
             {...register('courseId')}
-            aria-describedby={errors.courseId ? `${fieldId.courseId}-error` : undefined}
-            aria-invalid={!!errors.courseId || undefined}
           >
             <option value="">강의 선택</option>
             {courses.map((course) => (
@@ -214,11 +200,13 @@ export function StudyBlockEditorPanel({
             요일
           </label>
           <select
+            aria-describedby={
+              errors.dayOfWeek ? `${fieldId.dayOfWeek}-error` : undefined
+            }
+            aria-invalid={!!errors.dayOfWeek || undefined}
             className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
             id={fieldId.dayOfWeek}
             {...register('dayOfWeek')}
-            aria-describedby={errors.dayOfWeek ? `${fieldId.dayOfWeek}-error` : undefined}
-            aria-invalid={!!errors.dayOfWeek || undefined}
           >
             <option value="">요일 선택</option>
             {DAYS_OF_WEEK.map((dayOfWeek) => (
@@ -242,13 +230,13 @@ export function StudyBlockEditorPanel({
               시작
             </label>
             <select
-              className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
-              id={fieldId.startTime}
-              {...register('startTime')}
               aria-describedby={
                 errors.startTime ? `${fieldId.startTime}-error` : undefined
               }
               aria-invalid={!!errors.startTime || undefined}
+              className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
+              id={fieldId.startTime}
+              {...register('startTime')}
             >
               {timeOptions.map((time) => (
                 <option key={time} value={time}>
@@ -270,11 +258,13 @@ export function StudyBlockEditorPanel({
               종료
             </label>
             <select
+              aria-describedby={
+                errors.endTime ? `${fieldId.endTime}-error` : undefined
+              }
+              aria-invalid={!!errors.endTime || undefined}
               className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-950 shadow-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
               id={fieldId.endTime}
               {...register('endTime')}
-              aria-describedby={errors.endTime ? `${fieldId.endTime}-error` : undefined}
-              aria-invalid={!!errors.endTime || undefined}
             >
               {timeOptions.map((time) => (
                 <option key={time} value={time}>
@@ -297,16 +287,16 @@ export function StudyBlockEditorPanel({
             메모
           </label>
           <Textarea
+            aria-describedby={errors.memo ? `${fieldId.memo}-error` : undefined}
             id={fieldId.memo}
+            isInvalid={!!errors.memo}
             placeholder="학습 목표나 참고 내용을 입력하세요."
             {...register('memo')}
-            aria-describedby={errors.memo ? `${fieldId.memo}-error` : undefined}
-            isInvalid={!!errors.memo}
           />
           <FieldError id={`${fieldId.memo}-error`} message={errors.memo?.message} />
         </div>
 
-        <div className="grid gap-2 pt-1">
+        <div className="grid gap-2 pt-1 sm:grid-cols-2">
           <Button isLoading={isSubmitting} type="submit">
             {isEditing ? '변경사항 반영' : '블록 추가'}
           </Button>
@@ -322,6 +312,7 @@ export function StudyBlockEditorPanel({
           </Button>
           {isEditing ? (
             <Button
+              className="sm:col-span-2"
               leftIcon={<Trash2 className="size-4" aria-hidden />}
               onClick={handleRemoveBlock}
               type="button"
@@ -332,6 +323,6 @@ export function StudyBlockEditorPanel({
           ) : null}
         </div>
       </form>
-    </aside>
+    </Modal>
   )
 }

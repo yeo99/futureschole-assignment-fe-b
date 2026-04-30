@@ -12,7 +12,7 @@ import { formatISODate, getWeekStartDate } from '@/entities/planner/model/week'
 import { WeekNavigator } from '@/features/change-planner-week/ui/week-navigator'
 import { useSavePlannerDraft } from '@/features/planner-save/model/use-save-planner-draft'
 import { PlannerSaveControls } from '@/features/planner-save/ui/planner-save-controls'
-import { StudyBlockEditorPanel } from '@/features/study-block-editor/ui/study-block-editor-panel'
+import { StudyBlockEditorModal } from '@/features/study-block-editor/ui/study-block-editor-modal'
 import { getApiErrorMessage } from '@/shared/api/http-client'
 import { InlineAlert } from '@/shared/ui/inline-alert'
 import { LoadingState } from '@/shared/ui/loading-state'
@@ -27,6 +27,7 @@ export function PlannerPage() {
   const [selectedBlockClientId, setSelectedBlockClientId] = useState<
     DraftStudyBlock['clientId'] | null
   >(null)
+  const [isEditorOpen, setIsEditorOpen] = useState(false)
   const [newBlockPreset, setNewBlockPreset] =
     useState<NewStudyBlockPreset | null>(null)
   const coursesQuery = useCoursesQuery()
@@ -92,6 +93,12 @@ export function PlannerPage() {
   const startCreateMode = (preset: NewStudyBlockPreset | null = null) => {
     setSelectedBlockClientId(null)
     setNewBlockPreset(preset)
+    setIsEditorOpen(true)
+  }
+  const closeEditor = () => {
+    setIsEditorOpen(false)
+    setSelectedBlockClientId(null)
+    setNewBlockPreset(null)
   }
   const handleChangeWeekStart = (nextWeekStart: string) => {
     if (
@@ -101,7 +108,8 @@ export function PlannerPage() {
       return
     }
 
-    startCreateMode()
+    closeEditor()
+    setSelectedBlockClientId(null)
     setWeekStart(nextWeekStart)
   }
 
@@ -143,28 +151,28 @@ export function PlannerPage() {
           ) : null}
 
           <PlannerSummary blocks={draftBlocks} courseMap={courseMap} />
-          <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
-            <WeeklyPlannerGrid
-              blocks={draftBlocks}
-              courseMap={courseMap}
-              selectedBlockClientId={effectiveSelectedBlockClientId}
-              onCreateBlockAtSlot={startCreateMode}
-              onSelectBlock={(block) => {
-                setNewBlockPreset(null)
-                setSelectedBlockClientId(block.clientId)
-              }}
-            />
-            <StudyBlockEditorPanel
-              blocks={draftBlocks}
-              courses={courses}
-              newBlockPreset={newBlockPreset}
-              selectedBlock={selectedBlock}
-              onAddBlock={addDraftBlock}
-              onCreateMode={() => startCreateMode()}
-              onRemoveBlock={removeDraftBlock}
-              onUpdateBlock={updateDraftBlock}
-            />
-          </div>
+          <WeeklyPlannerGrid
+            blocks={draftBlocks}
+            courseMap={courseMap}
+            selectedBlockClientId={effectiveSelectedBlockClientId}
+            onCreateBlockAtSlot={startCreateMode}
+            onSelectBlock={(block) => {
+              setNewBlockPreset(null)
+              setSelectedBlockClientId(block.clientId)
+              setIsEditorOpen(true)
+            }}
+          />
+          <StudyBlockEditorModal
+            blocks={draftBlocks}
+            courses={courses}
+            isOpen={isEditorOpen}
+            newBlockPreset={newBlockPreset}
+            selectedBlock={selectedBlock}
+            onAddBlock={addDraftBlock}
+            onClose={closeEditor}
+            onRemoveBlock={removeDraftBlock}
+            onUpdateBlock={updateDraftBlock}
+          />
         </section>
       ) : null}
     </PlannerShell>
