@@ -6,9 +6,16 @@ import { StudyBlockCard } from './study-block-card'
 interface DayColumnProps {
   blocks: DraftStudyBlock[]
   courseMap: CourseMap
+  selectedBlockClientId?: DraftStudyBlock['clientId'] | null
+  onSelectBlock?: (block: DraftStudyBlock) => void
 }
 
-export function DayColumn({ blocks, courseMap }: DayColumnProps) {
+export function DayColumn({
+  blocks,
+  courseMap,
+  selectedBlockClientId,
+  onSelectBlock,
+}: DayColumnProps) {
   return (
     <div className="relative h-full bg-white">
       <div className="absolute inset-0 grid grid-rows-12">
@@ -27,7 +34,9 @@ export function DayColumn({ blocks, courseMap }: DayColumnProps) {
           <StudyBlockCard
             block={block}
             courseMap={courseMap}
+            isSelected={block.clientId === selectedBlockClientId}
             key={block.clientId}
+            onSelect={onSelectBlock}
             style={{
               top: `${layout.topPercent}%`,
               height: `${layout.heightPercent}%`,

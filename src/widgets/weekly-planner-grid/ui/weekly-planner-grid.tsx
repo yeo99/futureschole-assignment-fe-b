@@ -8,11 +8,15 @@ import { TimeAxis } from '@/entities/planner/ui/time-axis'
 interface WeeklyPlannerGridProps {
   blocks: DraftStudyBlock[]
   courseMap: CourseMap
+  selectedBlockClientId?: DraftStudyBlock['clientId'] | null
+  onSelectBlock?: (block: DraftStudyBlock) => void
 }
 
 export function WeeklyPlannerGrid({
   blocks,
   courseMap,
+  selectedBlockClientId,
+  onSelectBlock,
 }: WeeklyPlannerGridProps) {
   const blocksByDay = groupBlocksByDay(blocks)
 
@@ -43,6 +47,8 @@ export function WeeklyPlannerGrid({
               <DayColumn
                 blocks={blocksByDay[dayOfWeek] ?? []}
                 courseMap={courseMap}
+                selectedBlockClientId={selectedBlockClientId}
+                onSelectBlock={onSelectBlock}
               />
             </div>
           ))}

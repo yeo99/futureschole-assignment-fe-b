@@ -27,6 +27,7 @@ const timeSchema = (requiredMessage: string) =>
     .string()
     .min(1, requiredMessage)
     .refine(isValidTimeFormat, PLANNER_VALIDATION_MESSAGES.INVALID_TIME_FORMAT)
+    .transform((value) => value as TimeString)
 
 export const studyBlockFormSchema = z
   .object({
@@ -47,10 +48,7 @@ export const studyBlockFormSchema = z
       return
     }
 
-    const timeRangeError = validateTimeRange(
-      value.startTime as TimeString,
-      value.endTime as TimeString,
-    )
+    const timeRangeError = validateTimeRange(value.startTime, value.endTime)
 
     if (!timeRangeError) {
       return

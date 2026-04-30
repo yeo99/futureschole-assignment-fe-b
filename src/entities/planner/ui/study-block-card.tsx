@@ -6,14 +6,18 @@ import type { DraftStudyBlock } from '../model/types'
 interface StudyBlockCardProps {
   block: DraftStudyBlock
   courseMap: CourseMap
+  isSelected?: boolean
   className?: string
+  onSelect?: (block: DraftStudyBlock) => void
   style?: CSSProperties
 }
 
 export function StudyBlockCard({
   block,
   courseMap,
+  isSelected = false,
   className,
+  onSelect,
   style,
 }: StudyBlockCardProps) {
   const course = courseMap.get(block.courseId)
@@ -23,8 +27,11 @@ export function StudyBlockCard({
       className={cn(
         'absolute left-1 right-1 overflow-hidden rounded-md border bg-white p-2 text-left shadow-sm transition',
         'hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-700',
+        isSelected ? 'ring-2 ring-slate-900 ring-offset-1' : null,
         className,
       )}
+      aria-pressed={isSelected}
+      onClick={() => onSelect?.(block)}
       style={{
         borderColor: course?.color ?? '#64748b',
         backgroundColor: `${course?.color ?? '#64748b'}18`,

@@ -1,9 +1,11 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createCourseMap } from '@/entities/course/model/create-course-map'
 import { useCoursesQuery } from '@/entities/course/model/queries'
 import { usePlannerDraftStore } from '@/entities/planner/model/draft-store'
 import { usePlannerQuery } from '@/entities/planner/model/queries'
+import type { DraftStudyBlock } from '@/entities/planner/model/types'
 import { formatISODate, getWeekStartDate } from '@/entities/planner/model/week'
+import { StudyBlockEditorPanel } from '@/features/study-block-editor/ui/study-block-editor-panel'
 import { getApiErrorMessage } from '@/shared/api/http-client'
 import { InlineAlert } from '@/shared/ui/inline-alert'
 import { LoadingState } from '@/shared/ui/loading-state'
@@ -14,17 +16,30 @@ import { WeeklyPlannerGrid } from '@/widgets/weekly-planner-grid/ui/weekly-plann
 const currentWeekStart = formatISODate(getWeekStartDate(new Date()))
 
 export function PlannerPage() {
+  const [selectedBlockClientId, setSelectedBlockClientId] = useState<
+    DraftStudyBlock['clientId'] | null
+  >(null)
   const coursesQuery = useCoursesQuery()
   const plannerQuery = usePlannerQuery(currentWeekStart)
   const draftWeekStart = usePlannerDraftStore((state) => state.weekStart)
   const isDirty = usePlannerDraftStore((state) => state.isDirty)
   const draftBlocks = usePlannerDraftStore((state) => state.blocks)
+  const addDraftBlock = usePlannerDraftStore((state) => state.addDraftBlock)
+  const updateDraftBlock = usePlannerDraftStore((state) => state.updateDraftBlock)
+  const removeDraftBlock = usePlannerDraftStore((state) => state.removeDraftBlock)
   const initializeDraftFromServer = usePlannerDraftStore(
     (state) => state.initializeDraftFromServer,
   )
   const courseMap = useMemo(
     () => createCourseMap(coursesQuery.data?.courses ?? []),
     [coursesQuery.data?.courses],
+  )
+  const courses = coursesQuery.data?.courses ?? []
+  const selectedBlock = useMemo(
+    () =>
+      draftBlocks.find((block) => block.clientId === selectedBlockClientId) ??
+      null,
+    [draftBlocks, selectedBlockClientId],
   )
 
   useEffect(() => {
@@ -41,6 +56,7 @@ export function PlannerPage() {
 
   const isLoading = coursesQuery.isLoading || plannerQuery.isLoading
   const error = coursesQuery.error ?? plannerQuery.error
+  const effectiveSelectedBlockClientId = selectedBlock?.clientId ?? null
 
   return (
     <PlannerShell
@@ -62,7 +78,23 @@ export function PlannerPage() {
           ) : null}
 
           <PlannerSummary blocks={draftBlocks} courseMap={courseMap} />
-          <WeeklyPlannerGrid blocks={draftBlocks} courseMap={courseMap} />
+          <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+            <WeeklyPlannerGrid
+              blocks={draftBlocks}
+              courseMap={courseMap}
+              selectedBlockClientId={effectiveSelectedBlockClientId}
+              onSelectBlock={(block) => setSelectedBlockClientId(block.clientId)}
+            />
+            <StudyBlockEditorPanel
+              blocks={draftBlocks}
+              courses={courses}
+              selectedBlock={selectedBlock}
+              onAddBlock={addDraftBlock}
+              onCreateMode={() => setSelectedBlockClientId(null)}
+              onRemoveBlock={removeDraftBlock}
+              onUpdateBlock={updateDraftBlock}
+            />
+          </div>
         </section>
       ) : null}
     </PlannerShell>
