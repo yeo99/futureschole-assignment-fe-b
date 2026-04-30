@@ -1,20 +1,7 @@
+import { PlannerPage } from '@/pages/planner-page/ui/planner-page'
+
 function App() {
-  return (
-    <main className="min-h-screen bg-slate-50 px-6 py-10 text-slate-950">
-      <section className="mx-auto flex max-w-5xl flex-col gap-4">
-        <p className="text-sm font-medium text-teal-700">FE-B Assignment</p>
-        <div className="space-y-3">
-          <h1 className="text-3xl font-semibold tracking-normal">
-            Weekly Study Planner
-          </h1>
-          <p className="max-w-2xl text-base leading-7 text-slate-600">
-            FSD Lite structure is ready. Planner features will be added in small
-            domain-focused commits.
-          </p>
-        </div>
-      </section>
-    </main>
-  )
+  return <PlannerPage />
 }
 
 export default App
