@@ -5,7 +5,10 @@ import { useForm } from 'react-hook-form'
 import type { Course } from '@/entities/course/model/types'
 import { DAY_LABELS, DAYS_OF_WEEK } from '@/entities/planner/model/constants'
 import { hasDraftTimeConflict } from '@/entities/planner/model/draft-validation'
-import { PLANNER_VALIDATION_MESSAGES } from '@/entities/planner/model/messages'
+import {
+  PLANNER_CONFIRM_MESSAGES,
+  PLANNER_VALIDATION_MESSAGES,
+} from '@/entities/planner/model/messages'
 import { generateTimeOptions } from '@/entities/planner/model/time'
 import type {
   DraftStudyBlock,
@@ -132,6 +135,10 @@ export function StudyBlockEditorPanel({
 
   const handleRemoveBlock = () => {
     if (!selectedBlock) {
+      return
+    }
+
+    if (!window.confirm(PLANNER_CONFIRM_MESSAGES.DELETE_BLOCK)) {
       return
     }
 

@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { hasDraftTimeConflict } from './draft-validation'
+import {
+  findDraftConflictClientIds,
+  hasDraftTimeConflict,
+} from './draft-validation'
 import type { DraftStudyBlock } from './types'
 
 const baseDraftBlock: DraftStudyBlock = {
@@ -37,5 +40,30 @@ describe('draft planner validation', () => {
         [baseDraftBlock],
       ),
     ).toBe(false)
+  })
+
+  it('충돌한 draft 블록의 clientId 목록을 반환한다', () => {
+    const conflictClientIds = findDraftConflictClientIds([
+      baseDraftBlock,
+      {
+        ...baseDraftBlock,
+        clientId: 'client-block-2',
+        id: 'block-2',
+        startTime: '09:30',
+        endTime: '10:30',
+      },
+      {
+        ...baseDraftBlock,
+        clientId: 'client-block-3',
+        id: 'block-3',
+        startTime: '10:30',
+        endTime: '11:00',
+      },
+    ])
+
+    expect([...conflictClientIds].sort()).toEqual([
+      'client-block-1',
+      'client-block-2',
+    ])
   })
 })

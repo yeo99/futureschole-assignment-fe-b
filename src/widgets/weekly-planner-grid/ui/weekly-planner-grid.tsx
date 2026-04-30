@@ -1,6 +1,7 @@
-import { useId, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import type { CourseMap } from '@/entities/course/model/create-course-map'
 import { DAY_LABELS, DAYS_OF_WEEK } from '@/entities/planner/model/constants'
+import { findDraftConflictClientIds } from '@/entities/planner/model/draft-validation'
 import { groupBlocksByDay } from '@/entities/planner/model/grouping'
 import type { DayOfWeek, DraftStudyBlock } from '@/entities/planner/model/types'
 import { DayColumn } from '@/entities/planner/ui/day-column'
@@ -22,6 +23,10 @@ export function WeeklyPlannerGrid({
   const daySelectId = useId()
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState<DayOfWeek>(0)
   const blocksByDay = groupBlocksByDay(blocks)
+  const conflictClientIds = useMemo(
+    () => findDraftConflictClientIds(blocks),
+    [blocks],
+  )
 
   return (
     <section className="rounded-md border border-slate-200 bg-white shadow-sm">
@@ -53,6 +58,7 @@ export function WeeklyPlannerGrid({
           <TimeAxis />
           <DayColumn
             blocks={blocksByDay[selectedDayOfWeek] ?? []}
+            conflictClientIds={conflictClientIds}
             courseMap={courseMap}
             selectedBlockClientId={selectedBlockClientId}
             onSelectBlock={onSelectBlock}
@@ -85,6 +91,7 @@ export function WeeklyPlannerGrid({
               >
                 <DayColumn
                   blocks={blocksByDay[dayOfWeek] ?? []}
+                  conflictClientIds={conflictClientIds}
                   courseMap={courseMap}
                   selectedBlockClientId={selectedBlockClientId}
                   onSelectBlock={onSelectBlock}

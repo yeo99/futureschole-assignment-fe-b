@@ -5,6 +5,7 @@ import { StudyBlockCard } from './study-block-card'
 
 interface DayColumnProps {
   blocks: DraftStudyBlock[]
+  conflictClientIds?: ReadonlySet<DraftStudyBlock['clientId']>
   courseMap: CourseMap
   selectedBlockClientId?: DraftStudyBlock['clientId'] | null
   onSelectBlock?: (block: DraftStudyBlock) => void
@@ -12,6 +13,7 @@ interface DayColumnProps {
 
 export function DayColumn({
   blocks,
+  conflictClientIds,
   courseMap,
   selectedBlockClientId,
   onSelectBlock,
@@ -34,6 +36,7 @@ export function DayColumn({
           <StudyBlockCard
             block={block}
             courseMap={courseMap}
+            isConflicted={conflictClientIds?.has(block.clientId)}
             isSelected={block.clientId === selectedBlockClientId}
             key={block.clientId}
             onSelect={onSelectBlock}

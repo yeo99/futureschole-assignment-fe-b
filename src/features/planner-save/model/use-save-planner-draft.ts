@@ -1,5 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
+import { findDraftConflictClientIds } from '@/entities/planner/model/draft-validation'
 import { usePlannerDraftStore } from '@/entities/planner/model/draft-store'
+import { PLANNER_VALIDATION_MESSAGES } from '@/entities/planner/model/messages'
 import { useSavePlannerMutation } from '@/entities/planner/model/queries'
 import { getApiErrorMessage } from '@/shared/api/http-client'
 import { QUERY_KEYS } from '@/shared/api/query-keys'
@@ -17,6 +19,11 @@ export function useSavePlannerDraft() {
 
   const saveDraft = () => {
     if (!weekStart) {
+      return
+    }
+
+    if (findDraftConflictClientIds(blocks).size > 0) {
+      setSaveError(PLANNER_VALIDATION_MESSAGES.TIME_CONFLICT)
       return
     }
 
