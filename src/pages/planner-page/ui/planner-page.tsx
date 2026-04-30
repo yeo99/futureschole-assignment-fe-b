@@ -2,9 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { createCourseMap } from '@/entities/course/model/create-course-map'
 import { useCoursesQuery } from '@/entities/course/model/queries'
 import { usePlannerDraftStore } from '@/entities/planner/model/draft-store'
+import { PLANNER_CONFIRM_MESSAGES } from '@/entities/planner/model/messages'
 import { usePlannerQuery } from '@/entities/planner/model/queries'
 import type { DraftStudyBlock } from '@/entities/planner/model/types'
 import { formatISODate, getWeekStartDate } from '@/entities/planner/model/week'
+import { WeekNavigator } from '@/features/change-planner-week/ui/week-navigator'
 import { useSavePlannerDraft } from '@/features/planner-save/model/use-save-planner-draft'
 import { PlannerSaveControls } from '@/features/planner-save/ui/planner-save-controls'
 import { StudyBlockEditorPanel } from '@/features/study-block-editor/ui/study-block-editor-panel'
@@ -18,11 +20,12 @@ import { WeeklyPlannerGrid } from '@/widgets/weekly-planner-grid/ui/weekly-plann
 const currentWeekStart = formatISODate(getWeekStartDate(new Date()))
 
 export function PlannerPage() {
+  const [weekStart, setWeekStart] = useState(currentWeekStart)
   const [selectedBlockClientId, setSelectedBlockClientId] = useState<
     DraftStudyBlock['clientId'] | null
   >(null)
   const coursesQuery = useCoursesQuery()
-  const plannerQuery = usePlannerQuery(currentWeekStart)
+  const plannerQuery = usePlannerQuery(weekStart)
   const draftWeekStart = usePlannerDraftStore((state) => state.weekStart)
   const isDirty = usePlannerDraftStore((state) => state.isDirty)
   const draftBlocks = usePlannerDraftStore((state) => state.blocks)
@@ -62,9 +65,36 @@ export function PlannerPage() {
     initializeDraftFromServer(plannerQuery.data)
   }, [draftWeekStart, initializeDraftFromServer, isDirty, plannerQuery.data])
 
+  useEffect(() => {
+    if (!isDirty) {
+      return
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault()
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [isDirty])
+
   const isLoading = coursesQuery.isLoading || plannerQuery.isLoading
   const error = coursesQuery.error ?? plannerQuery.error
   const effectiveSelectedBlockClientId = selectedBlock?.clientId ?? null
+  const handleChangeWeekStart = (nextWeekStart: string) => {
+    if (
+      isDirty &&
+      !window.confirm(PLANNER_CONFIRM_MESSAGES.DISCARD_UNSAVED_CHANGES)
+    ) {
+      return
+    }
+
+    setSelectedBlockClientId(null)
+    setWeekStart(nextWeekStart)
+  }
 
   return (
     <PlannerShell
@@ -88,6 +118,12 @@ export function PlannerPage() {
       {error ? (
         <InlineAlert variant="error">{getApiErrorMessage(error)}</InlineAlert>
       ) : null}
+
+      <WeekNavigator
+        disabled={isSaving}
+        weekStart={weekStart}
+        onChangeWeekStart={handleChangeWeekStart}
+      />
 
       {!isLoading && !error ? (
         <section className="grid gap-4">
