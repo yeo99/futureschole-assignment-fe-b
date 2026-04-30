@@ -1,0 +1,4 @@
+export const MOCK_POLICY = {
+  RESPONSE_DELAY_MS: 450,
+  SERVER_ERROR_WEEK_START: '2099-12-27',
+} as const
