@@ -28,6 +28,7 @@ export function PlannerPage() {
     DraftStudyBlock['clientId'] | null
   >(null)
   const [isEditorOpen, setIsEditorOpen] = useState(false)
+  const [isEditorDirty, setIsEditorDirty] = useState(false)
   const [newBlockPreset, setNewBlockPreset] =
     useState<NewStudyBlockPreset | null>(null)
   const coursesQuery = useCoursesQuery()
@@ -58,6 +59,7 @@ export function PlannerPage() {
       null,
     [draftBlocks, selectedBlockClientId],
   )
+  const hasUnsavedChanges = isDirty || isEditorDirty
 
   useEffect(() => {
     if (!plannerQuery.data) {
@@ -72,12 +74,13 @@ export function PlannerPage() {
   }, [draftWeekStart, initializeDraftFromServer, isDirty, plannerQuery.data])
 
   useEffect(() => {
-    if (!isDirty) {
+    if (!hasUnsavedChanges) {
       return
     }
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       event.preventDefault()
+      event.returnValue = ''
     }
 
     window.addEventListener('beforeunload', handleBeforeUnload)
@@ -85,7 +88,7 @@ export function PlannerPage() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload)
     }
-  }, [isDirty])
+  }, [hasUnsavedChanges])
 
   const isLoading = coursesQuery.isLoading || plannerQuery.isLoading
   const error = coursesQuery.error ?? plannerQuery.error
@@ -95,20 +98,29 @@ export function PlannerPage() {
     setNewBlockPreset(preset)
     setIsEditorOpen(true)
   }
-  const closeEditor = () => {
-    setIsEditorOpen(false)
-    setSelectedBlockClientId(null)
-    setNewBlockPreset(null)
-  }
-  const handleChangeWeekStart = (nextWeekStart: string) => {
+  const closeEditor = (options?: { skipDirtyConfirm?: boolean }) => {
     if (
-      isDirty &&
+      isEditorDirty &&
+      !options?.skipDirtyConfirm &&
       !window.confirm(PLANNER_CONFIRM_MESSAGES.DISCARD_UNSAVED_CHANGES)
     ) {
       return
     }
 
-    closeEditor()
+    setIsEditorOpen(false)
+    setIsEditorDirty(false)
+    setSelectedBlockClientId(null)
+    setNewBlockPreset(null)
+  }
+  const handleChangeWeekStart = (nextWeekStart: string) => {
+    if (
+      hasUnsavedChanges &&
+      !window.confirm(PLANNER_CONFIRM_MESSAGES.DISCARD_UNSAVED_CHANGES)
+    ) {
+      return
+    }
+
+    closeEditor({ skipDirtyConfirm: true })
     setSelectedBlockClientId(null)
     setWeekStart(nextWeekStart)
   }
@@ -170,6 +182,7 @@ export function PlannerPage() {
             selectedBlock={selectedBlock}
             onAddBlock={addDraftBlock}
             onClose={closeEditor}
+            onFormDirtyChange={setIsEditorDirty}
             onRemoveBlock={removeDraftBlock}
             onUpdateBlock={updateDraftBlock}
           />

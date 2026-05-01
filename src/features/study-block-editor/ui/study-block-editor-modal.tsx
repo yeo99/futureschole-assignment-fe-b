@@ -36,7 +36,8 @@ interface StudyBlockEditorModalProps {
   newBlockPreset: NewStudyBlockPreset | null
   selectedBlock: DraftStudyBlock | null
   onAddBlock: (block: SavePlannerBlockRequest) => void
-  onClose: () => void
+  onClose: (options?: { skipDirtyConfirm?: boolean }) => void
+  onFormDirtyChange: (isFormDirty: boolean) => void
   onRemoveBlock: (clientId: DraftStudyBlock['clientId']) => void
   onUpdateBlock: (
     clientId: DraftStudyBlock['clientId'],
@@ -85,6 +86,7 @@ export function StudyBlockEditorModal({
   selectedBlock,
   onAddBlock,
   onClose,
+  onFormDirtyChange,
   onRemoveBlock,
   onUpdateBlock,
 }: StudyBlockEditorModalProps) {
@@ -102,7 +104,7 @@ export function StudyBlockEditorModal({
   )
   const {
     control,
-    formState: { errors, isSubmitting },
+    formState: { errors, isDirty, isSubmitting },
     handleSubmit,
     register,
     reset,
@@ -124,6 +126,10 @@ export function StudyBlockEditorModal({
   useEffect(() => {
     reset(createFormDefaultValues(selectedBlock, newBlockPreset))
   }, [newBlockPreset, reset, selectedBlock])
+
+  useEffect(() => {
+    onFormDirtyChange(isOpen ? isDirty : false)
+  }, [isDirty, isOpen, onFormDirtyChange])
 
   const submitForm = handleSubmit((values) => {
     const hasConflict = hasDraftTimeConflict(
@@ -153,7 +159,8 @@ export function StudyBlockEditorModal({
     }
 
     reset(createFormDefaultValues(null, null))
-    onClose()
+    onFormDirtyChange(false)
+    onClose({ skipDirtyConfirm: true })
   })
 
   const handleRemoveBlock = () => {
@@ -166,7 +173,8 @@ export function StudyBlockEditorModal({
     }
 
     onRemoveBlock(selectedBlock.clientId)
-    onClose()
+    onFormDirtyChange(false)
+    onClose({ skipDirtyConfirm: true })
   }
 
   return (
@@ -174,7 +182,7 @@ export function StudyBlockEditorModal({
       isOpen={isOpen}
       title={isEditing ? '학습 블록 수정' : '학습 블록 추가'}
       description="강의, 요일, 시간을 입력하면 저장 전 draft에 먼저 반영됩니다."
-      onClose={onClose}
+      onClose={() => onClose()}
     >
       <form className="grid gap-4" onSubmit={submitForm}>
         <div>
