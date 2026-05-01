@@ -1,9 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { RotateCcw, Trash2 } from 'lucide-react'
 import { useEffect, useId, useMemo } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import type { Course } from '@/entities/course/model/types'
-import { DAY_LABELS, DAYS_OF_WEEK } from '@/entities/planner/model/constants'
+import {
+  DAY_LABELS,
+  DAYS_OF_WEEK,
+  MAX_MEMO_LENGTH,
+} from '@/entities/planner/model/constants'
 import { hasDraftTimeConflict } from '@/entities/planner/model/draft-validation'
 import {
   PLANNER_CONFIRM_MESSAGES,
@@ -92,10 +96,12 @@ export function StudyBlockEditorModal({
       startTime: `${formId}-start-time`,
       endTime: `${formId}-end-time`,
       memo: `${formId}-memo`,
+      memoCounter: `${formId}-memo-counter`,
     }),
     [formId],
   )
   const {
+    control,
     formState: { errors, isSubmitting },
     handleSubmit,
     register,
@@ -106,6 +112,14 @@ export function StudyBlockEditorModal({
     defaultValues: createFormDefaultValues(selectedBlock, newBlockPreset),
   })
   const isEditing = selectedBlock !== null
+  const memoLength = (useWatch({ control, name: 'memo' }) ?? '').length
+  const isMemoLengthExceeded = memoLength > MAX_MEMO_LENGTH
+  const memoDescriptionIds = [
+    fieldId.memoCounter,
+    errors.memo ? `${fieldId.memo}-error` : null,
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   useEffect(() => {
     reset(createFormDefaultValues(selectedBlock, newBlockPreset))
@@ -280,14 +294,26 @@ export function StudyBlockEditorModal({
         </div>
 
         <div>
-          <label
-            className="mb-1 block text-sm font-medium text-slate-700"
-            htmlFor={fieldId.memo}
-          >
-            메모
-          </label>
+          <div className="mb-1 flex items-center justify-between gap-3">
+            <label
+              className="block text-sm font-medium text-slate-700"
+              htmlFor={fieldId.memo}
+            >
+              메모
+            </label>
+            <span
+              className={
+                isMemoLengthExceeded
+                  ? 'text-xs font-medium text-red-600'
+                  : 'text-xs font-medium text-slate-500'
+              }
+              id={fieldId.memoCounter}
+            >
+              {memoLength}/{MAX_MEMO_LENGTH}
+            </span>
+          </div>
           <Textarea
-            aria-describedby={errors.memo ? `${fieldId.memo}-error` : undefined}
+            aria-describedby={memoDescriptionIds}
             id={fieldId.memo}
             isInvalid={!!errors.memo}
             placeholder="학습 목표나 참고 내용을 입력하세요."
