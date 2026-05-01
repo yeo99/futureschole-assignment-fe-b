@@ -10,6 +10,4 @@ export const PLANNER_END_TIME = '20:00' satisfies TimeString
 
 export const SLOT_MINUTES = 30
 
-export const MIN_MEMO_LENGTH = 0
-
 export const MAX_MEMO_LENGTH = 200
