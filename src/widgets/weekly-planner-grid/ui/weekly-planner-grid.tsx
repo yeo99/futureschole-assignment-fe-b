@@ -75,39 +75,41 @@ export function WeeklyPlannerGrid({
       </div>
 
       <div className="hidden overflow-hidden lg:block">
-        <div className="grid min-w-[996px] grid-cols-[72px_repeat(7,minmax(132px,1fr))] border-b border-slate-200 bg-slate-50">
-          <div className="border-r border-slate-200 px-3 py-3 text-xs font-semibold text-slate-500">
-            시간
-          </div>
-          {DAYS_OF_WEEK.map((dayOfWeek) => (
-            <div
-              className="border-r border-slate-200 px-3 py-3 text-center text-sm font-semibold text-slate-900 last:border-r-0"
-              key={dayOfWeek}
-            >
-              {DAY_LABELS[dayOfWeek]}
-            </div>
-          ))}
-        </div>
-
         <div className="overflow-x-auto">
-          <div className="grid h-[720px] min-w-[996px] grid-cols-[72px_repeat(7,minmax(132px,1fr))]">
-            <TimeAxis />
-            {DAYS_OF_WEEK.map((dayOfWeek) => (
-              <div
-                className="border-r border-slate-100 last:border-r-0"
-                key={dayOfWeek}
-              >
-                <DayColumn
-                  blocks={blocksByDay[dayOfWeek] ?? []}
-                  conflictClientIds={conflictClientIds}
-                  courseMap={courseMap}
-                  dayOfWeek={dayOfWeek}
-                  onCreateBlockAtSlot={onCreateBlockAtSlot}
-                  selectedBlockClientId={selectedBlockClientId}
-                  onSelectBlock={onSelectBlock}
-                />
+          <div className="min-w-[996px]">
+            <div className="grid grid-cols-[72px_repeat(7,minmax(132px,1fr))] border-b border-slate-200 bg-slate-50">
+              <div className="border-r border-slate-200 px-3 py-3 text-xs font-semibold text-slate-500">
+                시간
               </div>
-            ))}
+              {DAYS_OF_WEEK.map((dayOfWeek) => (
+                <div
+                  className="border-r border-slate-200 px-3 py-3 text-center text-sm font-semibold text-slate-900 last:border-r-0"
+                  key={dayOfWeek}
+                >
+                  {DAY_LABELS[dayOfWeek]}
+                </div>
+              ))}
+            </div>
+
+            <div className="grid h-[720px] grid-cols-[72px_repeat(7,minmax(132px,1fr))]">
+              <TimeAxis />
+              {DAYS_OF_WEEK.map((dayOfWeek) => (
+                <div
+                  className="border-r border-slate-100 last:border-r-0"
+                  key={dayOfWeek}
+                >
+                  <DayColumn
+                    blocks={blocksByDay[dayOfWeek] ?? []}
+                    conflictClientIds={conflictClientIds}
+                    courseMap={courseMap}
+                    dayOfWeek={dayOfWeek}
+                    onCreateBlockAtSlot={onCreateBlockAtSlot}
+                    selectedBlockClientId={selectedBlockClientId}
+                    onSelectBlock={onSelectBlock}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
