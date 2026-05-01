@@ -3,14 +3,12 @@ import type { ReactNode } from 'react'
 interface PlannerShellProps {
   title: string
   description: string
-  toolbar?: ReactNode
   children: ReactNode
 }
 
 export function PlannerShell({
   title,
   description,
-  toolbar,
   children,
 }: PlannerShellProps) {
   return (
@@ -30,7 +28,6 @@ export function PlannerShell({
               </p>
             </div>
           </div>
-          {toolbar}
         </header>
         {children}
       </section>

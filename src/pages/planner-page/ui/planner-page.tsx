@@ -129,18 +129,6 @@ export function PlannerPage() {
     <PlannerShell
       title="주간 학습 플래너"
       description="월요일부터 일요일까지의 학습 블록을 한 주 단위로 확인하고 편집합니다."
-      toolbar={
-        !isLoading && !error ? (
-          <PlannerSaveControls
-            isDirty={isDirty}
-            isSaving={isSaving}
-            lastErrorMessage={lastErrorMessage}
-            lastSavedAt={lastSavedAt}
-            onDiscard={discardDraftChanges}
-            onSave={saveDraft}
-          />
-        ) : null
-      }
     >
       {isLoading ? <LoadingState title="플래너를 불러오는 중입니다." /> : null}
 
@@ -163,6 +151,16 @@ export function PlannerPage() {
           ) : null}
 
           <PlannerSummary blocks={draftBlocks} courseMap={courseMap} />
+          <div className="flex justify-end">
+            <PlannerSaveControls
+              isDirty={isDirty}
+              isSaving={isSaving}
+              lastErrorMessage={lastErrorMessage}
+              lastSavedAt={lastSavedAt}
+              onDiscard={discardDraftChanges}
+              onSave={saveDraft}
+            />
+          </div>
           <WeeklyPlannerGrid
             blocks={draftBlocks}
             courseMap={courseMap}
