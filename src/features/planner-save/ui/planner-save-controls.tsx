@@ -1,6 +1,7 @@
 import { Save, Undo2 } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { InlineAlert } from '@/shared/ui/inline-alert'
+import { PLANNER_SAVE_MESSAGES } from '../model/messages'
 
 interface PlannerSaveControlsProps {
   isDirty: boolean
@@ -37,7 +38,7 @@ export function PlannerSaveControls({
           type="button"
           variant="secondary"
         >
-          변경 취소
+          {PLANNER_SAVE_MESSAGES.DISCARD_BUTTON}
         </Button>
         <Button
           disabled={!isDirty}
@@ -46,7 +47,7 @@ export function PlannerSaveControls({
           onClick={onSave}
           type="button"
         >
-          저장
+          {PLANNER_SAVE_MESSAGES.SAVE_BUTTON}
         </Button>
       </div>
 
@@ -58,7 +59,7 @@ export function PlannerSaveControls({
 
       {!lastErrorMessage && lastSavedAt ? (
         <p className="text-xs font-medium text-slate-500" role="status">
-          마지막 저장 {formatSavedAt(lastSavedAt)}
+          {PLANNER_SAVE_MESSAGES.LAST_SAVED_PREFIX} {formatSavedAt(lastSavedAt)}
         </p>
       ) : null}
     </div>

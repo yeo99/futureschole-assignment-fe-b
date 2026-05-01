@@ -6,6 +6,7 @@ import { useSavePlannerMutation } from '@/entities/planner/model/queries'
 import { getApiErrorMessage } from '@/shared/api/http-client'
 import { QUERY_KEYS } from '@/shared/api/query-keys'
 import { createSavePlannerRequest } from './create-save-planner-request'
+import { PLANNER_SAVE_MESSAGES } from './messages'
 
 export function useSavePlannerDraft() {
   const queryClient = useQueryClient()
@@ -33,7 +34,9 @@ export function useSavePlannerDraft() {
         replaceDraftAfterSave(response)
       },
       onError: (error) => {
-        setSaveError(getApiErrorMessage(error))
+        setSaveError(
+          getApiErrorMessage(error) || PLANNER_SAVE_MESSAGES.SAVE_FAILED_FALLBACK,
+        )
       },
     })
   }
